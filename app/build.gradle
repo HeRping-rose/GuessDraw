@@ -44,6 +44,10 @@ dependencies {
     implementation libs.okio
     implementation libs.gson
 
+    implementation libs.storage.android//数据存储
+    implementation libs.realtime.android//实时通信,推送服务
+//    implementation libs.mixpush.android//推送服务
+
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
