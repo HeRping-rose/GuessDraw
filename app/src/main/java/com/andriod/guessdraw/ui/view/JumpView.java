@@ -151,7 +151,7 @@ public class JumpView extends View {
 
 
         mTextSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,14,getResources().getDisplayMetrics());
-        mTextPaint.setColor(Color.WHITE);
+        mTextPaint.setColor(mTextColor);
         mTextPaint.setTextSize(mTextSize);
         //获取当前字体下文本的metrics对象 这里包含文本的各种尺寸
         Paint.FontMetrics fontMetrics = mTextPaint.getFontMetrics();
@@ -250,6 +250,7 @@ public class JumpView extends View {
             mTouchRadius =  animatedValue;
             invalidate();
         });
+        scaleAnimator.start();
     }
 
     @Override

@@ -35,7 +35,7 @@
         android:layout_marginTop="16dp"
 
         app:text="跳转"
-        app:textColor="@android:color/black"
+        app:textColor="@color/red"
         app:textSize="18sp"
 
         app:backgroundCircleColor="@color/blue"
