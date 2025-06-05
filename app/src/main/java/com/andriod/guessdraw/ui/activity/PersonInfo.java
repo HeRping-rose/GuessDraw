@@ -1,4 +1,4 @@
-package com.andriod.guessdraw.ui;
+package com.andriod.guessdraw.ui.activity;
 
 import android.os.Bundle;
 

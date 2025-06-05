@@ -28,7 +28,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".ui.Advertisement"
+            android:name=".ui.activity.Advertisement"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -50,19 +50,14 @@
             </intent-filter>
         </receiver> <!-- 即时通讯和推送 END -->
         <activity
-            android:name=".ui.PersonInfo"
+            android:name=".ui.activity.PersonInfo"
             android:exported="false" />
         <activity
-            android:name=".ui.Verification"
+            android:name=".ui.activity.Verification"
             android:exported="false" />
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.activity.MainActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <provider

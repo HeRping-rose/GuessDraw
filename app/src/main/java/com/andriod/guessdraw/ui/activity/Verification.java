@@ -1,4 +1,4 @@
-package com.andriod.guessdraw.ui;
+package com.andriod.guessdraw.ui.activity;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -116,7 +116,7 @@ public class Verification extends AppCompatActivity {
             String finalCode = code.toString();
             // 获取模拟验证码（通过Intent传递）
             String correctCode = getIntent().getStringExtra("mock_code");
-            if (correctCode == null) correctCode = "123456"; // 默认模拟验证码
+            if (correctCode == null) correctCode = "123123"; // 默认模拟验证码
             if (finalCode.equals(correctCode)) {
                 for (EditText et : editTexts) setEditTextBorder(et, R.color.green);
                 startActivity(new Intent(Verification.this, PersonInfo.class));

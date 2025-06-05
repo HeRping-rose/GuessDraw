@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.Advertisement">
+    tools:context=".ui.activity.Advertisement">
 
     <ImageView
         android:id="@+id/ivAd"
@@ -16,4 +16,39 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:srcCompat="@tools:sample/avatars" />
+
+<!--    <com.andriod.guessdraw.ui.view.adTabView-->
+<!--        android:id="@+id/ad_tab"-->
+<!--        android:layout_width="50dp"-->
+<!--        android:layout_height="50dp"-->
+<!--        android:layout_marginTop="24dp"-->
+<!--        android:layout_marginEnd="16dp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        tools:ignore="MissingConstraints" />-->
+
+    <com.andriod.guessdraw.ui.view.JumpView
+        android:id="@+id/jump_view"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+
+        app:text="跳转"
+        app:textColor="@android:color/black"
+        app:textSize="18sp"
+
+        app:backgroundCircleColor="@color/blue"
+        app:color="@color/green"
+        app:progressColor="@color/orange"
+
+        app:progressWidth="4dp"
+
+        app:duration="5000"
+
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

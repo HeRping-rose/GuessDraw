@@ -1,4 +1,4 @@
-package com.andriod.guessdraw.ui;
+package com.andriod.guessdraw.ui.activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -66,12 +66,15 @@ public class MainActivity extends AppCompatActivity {
                 //     打印日志
                     log.info("获取到的图片地址: {}", imgUrl);
 
-
                 //     将图片显示到ivImg
                     if (imgUrl != null && !imgUrl.isEmpty()) {
                         Glide.with(MainActivity.this)
                                 .load(imgUrl)
                                 .into(binding.ivImg);
+
+                    //
+
+
                     } else {
                         Toast.makeText(MainActivity.this, "图片地址为空", Toast.LENGTH_SHORT).show();
                     }
@@ -153,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
 
             Intent intent = new Intent(MainActivity.this, Verification.class);
-            intent.putExtra("mock_code", "234567");
+            intent.putExtra("mock_code", "123456");// 模拟验证码
             startActivity(intent);
             // BmobSMS.verifySmsCode( "19882018021", "851737", new UpdateListener() {
             //     @Override
