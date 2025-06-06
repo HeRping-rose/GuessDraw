@@ -10,6 +10,7 @@
     <color name="orange">#FF9800</color>
     <color name="purple">#9C27B0</color>
     <color name="teal">#009688</color>
+    <color name="light_teal">#50e3c2</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="dark_gray">#212121</color>
 </resources>

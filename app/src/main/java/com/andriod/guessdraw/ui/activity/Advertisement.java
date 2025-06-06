@@ -28,13 +28,13 @@ public class Advertisement extends AppCompatActivity {
             public void onClick() {
                 binding.jumpView.stop();
                 //跳转到下一个页面
-                // startActivity(new Intent(Advertisement.this,MainActivity.class));
+                startActivity(new Intent(Advertisement.this,MainActivity.class));
             }
 
             @Override
             public void onFinished() {
                 //跳转到下一个页面
-                // startActivity(new Intent(Advertisement.this,MainActivity.class));
+                startActivity(new Intent(Advertisement.this,MainActivity.class));
 
             }
         });
