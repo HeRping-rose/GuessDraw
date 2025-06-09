@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +30,7 @@ import cn.leancloud.LCQuery;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
+import com.andriod.guessdraw.ui.view.PxdLoadingView;
 import com.bumptech.glide.Glide;
 
 import org.slf4j.Logger;
@@ -40,23 +42,22 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private static final int REQUEST_CODE_PICK_IMAGE = 1001;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        binding.btnLoad.setOnClickListener(v->{
+            // binding.pxdLoadingView.setVisibility(View.VISIBLE);
+            binding.pxdLoadingView.startAnimation();
+        });
 
         binding.btnImg.setOnClickListener(v->{
             LCQuery<LCObject> query = new LCQuery<>("Advertisement");
             query.findInBackground().subscribe(new Observer<List<LCObject>>() {
                 @Override
-                public void onSubscribe(Disposable d) {
-
-                }
-
+                public void onSubscribe(Disposable d) {}
                 @Override
                 public void onNext(List<LCObject> lcObjects) {
                 // 获取到数据
@@ -71,30 +72,17 @@ public class MainActivity extends AppCompatActivity {
                         Glide.with(MainActivity.this)
                                 .load(imgUrl)
                                 .into(binding.ivImg);
-
                     //
-
-
                     } else {
                         Toast.makeText(MainActivity.this, "图片地址为空", Toast.LENGTH_SHORT).show();
                     }
-
                 }
-
                 @Override
-                public void onError(Throwable e) {
-
-                }
-
+                public void onError(Throwable e) {}
                 @Override
-                public void onComplete() {
-
-                }
+                public void onComplete() {}
             });
         });
-
-
-
 
         // 启动时尝试从SharedPreferences加载头像
         SharedPreferences sp = getSharedPreferences("avatar", MODE_PRIVATE);
@@ -104,34 +92,25 @@ public class MainActivity extends AppCompatActivity {
             Glide.with(this).asBitmap().load(bytes).circleCrop().into(binding.ivHeader);
         }
 
-
         binding.btn.setEnabled(false);
         binding.radioButton.setText(Html.fromHtml(binding.radioButton.getText().toString()));
         binding.radioButton.setMovementMethod(LinkMovementMethod.getInstance());
         binding.radioButton.setOnClickListener(v-> {
             if (binding.radioButton.isChecked()) {
-
                 binding.btn.setEnabled(true);
                 // 如果已选中，则取消选中
-
             } else {
                 binding.btn.setEnabled(false);
                 // 如果未选中，则选中
-
             }
-
-
         });
-
         binding.btn.setOnClickListener(v->{
-
             if (binding.radioButton.isChecked()) {
                 // 发送验证码逻辑
                 // Toast.makeText(this, "验证码已发送", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "请先勾选隐私政策", Toast.LENGTH_SHORT).show();
             }
-
             BmobSMS.requestSMSCode(binding.etPhone.getText().toString(), "短信验证", new QueryListener<Integer>() {
                 @Override
                 public void done(Integer integer, BmobException e) {
@@ -149,12 +128,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
-
-
         });
         binding.button3.setOnClickListener(v->{
-
-
             Intent intent = new Intent(MainActivity.this, Verification.class);
             intent.putExtra("mock_code", "123456");// 模拟验证码
             startActivity(intent);
@@ -173,15 +148,12 @@ public class MainActivity extends AppCompatActivity {
             //     }
             // });
         });
-
         binding.ivHeader.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
             startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE);
         });
-
     }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

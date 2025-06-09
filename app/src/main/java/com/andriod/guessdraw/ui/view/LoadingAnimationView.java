@@ -24,33 +24,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LoadingAnimationView extends View {
-    private List<Drop> drops = new ArrayList<>();
+    private List<Drop> drops = new ArrayList<>();// 用于存储水滴对象的列表
     private Path mPath,liquidLPath,liquidRPath; // 用于绘制加载动画的路径
     private Paint mPaint ,circlePaint,deCirclePaint,liquidLPaint,liquidRPaint; // 用于绘制路径的画笔
     private float topY = 0; // 水滴顶部 Y 坐标
-    private float dropHeight; // 水滴高度
-    private float dropWidth; // 水滴宽度
-
-    // 1. 添加成员变量
-    private boolean showDrop = true;
+    private float dropHeight,dropWidth; // 水滴高度 // 水滴宽度
 
     private float currentSweepAngle = 0f;// 当前弧形的扫过角度
     private RectF arcRectF;// 弧形的矩形区域
 
     // 新增成员变量
-    private float wavePercent = 0f; // 水面高度百分比（0~1）
-    private float wavePhase = 0f;   // 波浪相位
+    private float wavePercent = 0f,wavePhase = 0f; // 水面高度百分比（0~1） // 波浪相位
 
-    private float highlightX = -1f;
+    private float highlightX = -1f;//
+
+    // 1. 添加成员状态变量
+    private boolean showDrop = true;
     private boolean isHighlightFilled = false;// 是否填充高亮区域
-    private ValueAnimator waveAnimator,highlightAnimator;
+    private ValueAnimator waveAnimator,highlightAnimator;// 水波动画和高亮动画对象
 
     public LoadingAnimationView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs,0);
         init();
     }
-
-
+    public LoadingAnimationView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
 
     private void init() {
         // 初始化画笔和路径
@@ -65,6 +64,7 @@ public class LoadingAnimationView extends View {
 
         circlePaint.setColor(Color.parseColor("#50e3c2")); // 设置画笔颜色为黑色#50e3c2
         circlePaint.setStyle(Paint.Style.STROKE); // 设置画笔为描边模式  fill实心
+        circlePaint.setStrokeCap(Paint.Cap.ROUND);// 设置末端为圆角
         circlePaint.setStrokeWidth(UIUtils.dp2px(5)); // 设置画笔宽度
 
         deCirclePaint.setColor(Color.parseColor("#1f2222")); // 设置画笔颜色为黑色#50e3c2
@@ -117,17 +117,16 @@ public class LoadingAnimationView extends View {
         highlightAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                isHighlightFilled = true;
+                isHighlightFilled = true;// 动画结束后填充高亮区域
                 invalidate();
             }
         });
         highlightAnimator.start();
     }
 
-
     // 启动水波动画
     private void startWaveAnimation() {
-        startHighlightAnimation();
+        startHighlightAnimation();// 启动高亮动画
 
         waveAnimator = ValueAnimator.ofFloat(0f, 1.05f);
         waveAnimator.setDuration(2000); // 3秒充满
@@ -156,7 +155,6 @@ public class LoadingAnimationView extends View {
             @Override
             public void onAnimationStart(@NonNull Animator animation) {
                 showDrop = true; // 关键：每次下落动画开始时显示水滴
-
             }
 
             @Override
@@ -164,14 +162,8 @@ public class LoadingAnimationView extends View {
                 showDrop = false; // 隐藏水滴
                 startArcAnimation();// 启动弧形动画
                 //这个时候水滴已经到达底部，可以开始绘制圆弧动画 之后再绘制动画
-
-
                 postDelayed(() -> stopArcAnimation(), 2000); // 每2秒重新开始水滴动画
                 postDelayed(() -> startWaveAnimation(), 2000); // 每2秒重新开始水波动画
-
-
-
-
             }
 
             @Override
@@ -184,18 +176,18 @@ public class LoadingAnimationView extends View {
         });
 
     }
+
     // 添加水滴回退动画
     private void reverseDropAnimation() {
         ValueAnimator animator = ValueAnimator.ofFloat(getHeight() * 0.4f, 0);
         animator.setDuration(2000);
         animator.addUpdateListener(animation -> {
-            topY = (float) animation.getAnimatedValue();
+            topY = (float) animation.getAnimatedValue();// 更新水滴顶部 Y 坐标
             invalidate();
         });
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
-
                 showDrop = true; // 回退时显示水滴
             }
             @Override
@@ -222,11 +214,6 @@ public class LoadingAnimationView extends View {
         animator.start();
     }
 
-    public LoadingAnimationView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-
-    }
-
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -236,6 +223,8 @@ public class LoadingAnimationView extends View {
         float radius = getWidth() * 0.2f;
         float centerX = getWidth() / 2f;
         float circleCenterY = getHeight() * 0.4f + dropHeight + radius;
+
+        // 设置圆弧的矩形区域
         arcRectF = new RectF(
                 centerX - radius,
                 circleCenterY - radius,
@@ -250,8 +239,9 @@ public class LoadingAnimationView extends View {
 
 // ...原有代码...
 //         startWaveAnimation(); // 启动水波动画
-
     }
+
+    // 启动弧形动画
     private void startArcAnimation() {
         ValueAnimator animator = ValueAnimator.ofFloat(0, 180);
         animator.setDuration(2000);
@@ -261,10 +251,9 @@ public class LoadingAnimationView extends View {
         });
         // stopArcAnimation();
         animator.start();
-
-
-
     }
+
+    // 停止弧形动画
     private void stopArcAnimation() {
         ValueAnimator animator = ValueAnimator.ofFloat(180, 0);
         animator.setDuration(2000);
@@ -276,8 +265,6 @@ public class LoadingAnimationView extends View {
             @Override
             public void onAnimationEnd(Animator animation) {
                 reverseDropAnimation(); // 圆弧动画结束后水滴回退
-
-
             }
         });
         animator.start();
@@ -290,14 +277,12 @@ public class LoadingAnimationView extends View {
         float centerX = getWidth() / 2f;
         // 在这里绘制加载动画
         // mPaint = new Paint(Paint.ANTI_ALIAS_FLAG); // 初始化画笔
-
         // mPaint.setColor(Color.parseColor("#50e3c2")); // 设置画笔颜色为黑色#50e3c2
         // mPaint.setStyle(Paint.Style.FILL); // 设置画笔为描边模式  fill实心
         // mPaint.setStrokeWidth(UIUtils.dp2px(5)); // 设置画笔宽度
         // mPath = new Path(); // 初始化路径
 
         if(showDrop) {
-
             mPath.reset();
             mPath.moveTo(centerX, topY); // 设置起点
             // mPath.lineTo(getWidth()/2, getHeight()*0.4f); // 绘制一条线到屏幕高度2/5部
@@ -324,9 +309,6 @@ public class LoadingAnimationView extends View {
             // mPath.cubicTo(50, 50, 150, 150, 200, 100); // 添加一个三次贝塞尔曲线
             // mPath.close();
             canvas.drawPath(mPath,mPaint);
-
-
-
         }
 
         liquidLPath.reset();
@@ -346,11 +328,6 @@ public class LoadingAnimationView extends View {
         // canvas.drawPath(liquidRPath, liquidRPaint);
         // canvas.drawPath(liquidPath, liquidRPaint);
 
-
-
-
-
-
         // 计算圆心和半径
         float radius = getWidth()*0.2f; // 圆半径可与水滴宽度相同
         float radiusSmall = getWidth()*0.2f-UIUtils.dp2px(10); // 圆半径可与水滴宽度相同
@@ -360,9 +337,7 @@ public class LoadingAnimationView extends View {
         // 绘制圆
         // canvas.drawCircle(centerX, circleCenterY, radius, circlePaint);
 
-
 //绘制水波
-
         if(wavePercent > 0f){
             // 裁剪圆形区域
             canvas.save();
@@ -396,7 +371,7 @@ public class LoadingAnimationView extends View {
             waterPaint.setStyle(Paint.Style.FILL);
             canvas.drawPath(wavePath, waterPaint);
 
-            // 绘制高亮条
+// 绘制高亮条
             if (highlightX >= 0) {
                 float rectWidth = UIUtils.dp2px(100);// 更宽
                 float startX = highlightX - rectWidth / 2;
@@ -414,7 +389,7 @@ public class LoadingAnimationView extends View {
 
             canvas.restore();
 
-            // 3. onDraw 里填充高亮色
+// 3. onDraw 里填充高亮色
             if (isHighlightFilled) {
                 Paint fillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
                 fillPaint.setColor(Color.parseColor("#7ff6e0")); // 高亮色
@@ -426,15 +401,11 @@ public class LoadingAnimationView extends View {
                 canvas.drawCircle(centerX, circleCenterY, radiusSmall, fillPaint);
                 canvas.restore();
             }
-
-
         }
-
 
         // 可选：绘制圆环边框
         circlePaint.setStyle(Paint.Style.STROKE);
         // canvas.drawCircle(centerX, circleCenterY, radiusSmall, circlePaint);
-
 
         // 绘制圆弧动画
         circlePaint.setStyle(Paint.Style.STROKE);
@@ -442,8 +413,6 @@ public class LoadingAnimationView extends View {
         canvas.drawArc(arcRectF, -90, -currentSweepAngle, false, circlePaint);
         // canvas.drawArc(arcRectF, 90, currentSweepAngle, false, deCirclePaint);
         // canvas.drawArc(arcRectF, 90, -currentSweepAngle, false, deCirclePaint);
-
-
 
         // 在 onDraw 中绘制所有水滴
         for (Drop drop : drops) {
@@ -454,9 +423,11 @@ public class LoadingAnimationView extends View {
             mPath.close();
             canvas.drawPath(mPath, mPaint);
         }
-
     }
+
+    // 定义一个 Handler 用于处理定时任务 // 批量生成水滴
     private Handler handler = new Handler();
+    // 定时任务，用于每隔一段时间添加水滴
     private Runnable dropRunnable = new Runnable() {
         @Override
         public void run() {
@@ -466,15 +437,13 @@ public class LoadingAnimationView extends View {
             handler.postDelayed(this, 50); // 每0.5秒添加一个水滴
         }
     };
-    // 批量生成水滴
-
-
+    // 添加水滴的定时任务
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         handler.post(dropRunnable);
     }
-
+    // 移除水滴的定时任务
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();

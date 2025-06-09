@@ -151,14 +151,32 @@
         app:layout_constraintEnd_toEndOf="@+id/ivApple"
         app:layout_constraintStart_toStartOf="@+id/ivWeChat" />
 
-    <com.andriod.guessdraw.ui.view.LoadingAnimationView
-        android:id="@+id/loading_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white"
+<!--    <com.andriod.guessdraw.ui.view.LoadingAnimationView-->
+<!--        android:id="@+id/loading_view"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:background="@color/white"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        tools:ignore="MissingConstraints" />-->
+
+    <com.andriod.guessdraw.ui.view.PxdLoadingView
+        android:id="@+id/pxd_loading_view"
+        android:layout_width="200dp"
+        android:layout_height="400dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnLoad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Loading"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
