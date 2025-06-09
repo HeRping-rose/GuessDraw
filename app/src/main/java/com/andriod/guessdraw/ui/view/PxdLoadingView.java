@@ -66,6 +66,11 @@ public class PxdLoadingView extends View {
     //水波荡漾动画
     private ValueAnimator mWaterWaveAnimator;
 
+    // 1. 新增变量
+    private boolean mShowTick = false;
+    private float mTickProgress = 0f;
+    private ValueAnimator mTickAnimator;
+
     public PxdLoadingView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs,0);
     }
@@ -190,6 +195,18 @@ public class PxdLoadingView extends View {
             resetPath();
             invalidate();
         });
+
+        mWaterLevelAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mTickProgress = 0f; // 重置进度
+                mShowTick = true;// 显示打钩
+                mTickAnimator.start();
+            }
+        });
+
+        // 3. 在initAnimators()最后调用
+        initTickAnimator();
     }
 
     public void startAnimation(){
@@ -198,6 +215,25 @@ public class PxdLoadingView extends View {
         mWaterLevel = getHeight();
         mWaterWavePath.reset();
         invalidate();
+
+        mShowTick = false;// 重置打钩状态
+        mTickProgress = 0f;     // 重置打钩进度
+    }
+
+    // 2. 初始化打钩动画
+    private void initTickAnimator() {
+        mTickAnimator = ValueAnimator.ofFloat(0f, 1f);
+        mTickAnimator.setDuration(400);
+        mTickAnimator.addUpdateListener(animation -> {
+            mTickProgress = (float) animation.getAnimatedValue();
+            invalidate();
+        });
+        mTickAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mShowTick = false;
+            }
+        });
     }
 
     @Override
@@ -237,6 +273,8 @@ public class PxdLoadingView extends View {
                 getWidth()-mStrokeWidth/2f,
                 getHeight()-mStrokeWidth/2f);
 
+
+
         //计算雨滴的绘制区域
         mRainDropRect = new RectF(
                 getWidth()/2 - mRainDropRadius,
@@ -246,8 +284,9 @@ public class PxdLoadingView extends View {
         );
 
         //设置裁剪区域路径
+        //修改bug水波区域圆形上方区域过大 圆心坐标应该上移mStrokeWidth/2f
         mClipPath.addCircle(getWidth()/2f,
-                getWidth()*3/2f,
+                getWidth()*3/2f-mStrokeWidth/2f,
                 mRadius ,
                 Path.Direction.CW);
 
@@ -300,6 +339,46 @@ public class PxdLoadingView extends View {
 
         //绘制水波
         drawWater(canvas);
+
+        drawTick(canvas); // 新增// 绘制打钩
+    }
+
+    // 5. onDraw中绘制√
+    private void drawTick(Canvas canvas) {
+        if (!mShowTick && mTickProgress == 0f) return;
+        mPaint.setColor(Color.parseColor("#4cbba1"));
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(mStrokeWidth * 1.5f);
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+
+        // 计算√的起点、中点、终点
+        float centerX = getWidth() / 2f;
+        float centerY = getWidth() * 3f / 2f;;
+        float size = mRadius * 0.8f;
+        float startX = centerX - size / 2;// 起点X坐标
+        float startY = centerY + size * 0.1f;
+        float midX = centerX - size * 0.1f;// 中点X坐标
+        float midY = centerY + size * 0.4f;
+        float endX = centerX + size / 2;// 终点X坐标
+        float endY = centerY - size * 0.3f;
+
+        Path tickPath = new Path();
+        tickPath.moveTo(startX, startY);
+        if (mTickProgress < 0.5f) {
+            float t = mTickProgress / 0.5f;
+            tickPath.lineTo(
+                    startX + (midX - startX) * t,
+                    startY + (midY - startY) * t
+            );
+        } else {
+            tickPath.lineTo(midX, midY);
+            float t = (mTickProgress - 0.5f) / 0.5f;
+            tickPath.lineTo(
+                    midX + (endX - midX) * t,
+                    midY + (endY - midY) * t
+            );
+        }
+        canvas.drawPath(tickPath, mPaint);
     }
 
     //绘制水波
