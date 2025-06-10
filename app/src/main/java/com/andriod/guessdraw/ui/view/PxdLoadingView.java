@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PathMeasure;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
@@ -34,6 +35,7 @@ public class PxdLoadingView extends View {
     private float mRainDropY = mRainDropRadius;
     //画笔
     private Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint mRightPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     //画笔颜色
     private int mRainDropColor = Color.parseColor("#4cbba1");
     private int mWaterColor = Color.parseColor("#50e3c2");
@@ -62,11 +64,21 @@ public class PxdLoadingView extends View {
     private float mOffsetX = mMaxOffsetX;
     private float mWaveHeight = UIUtils.dp2px(40);
     //水位上升动画
-    private ValueAnimator mWaterLevelAnimator;
+    private ValueAnimator mWaterLevelAnimator,mRightAnimator;
     //水波荡漾动画
     private ValueAnimator mWaterWaveAnimator;
 
     // 1. 新增变量
+
+    private Path rightPath = new Path();//
+    private PathMeasure rightPathMeasure = new PathMeasure();// 路径测量器对象
+    //保存√的长度
+    float rightPathLength = 0f;
+    //绘制√的动画因子
+    private float rightPathRate = 0f;
+    //保存勾勾的某一段的path路径
+    private Path rightPathSegment = new Path();
+
     private boolean mShowTick = false;
     private float mTickProgress = 0f;
     private ValueAnimator mTickAnimator;
@@ -201,12 +213,23 @@ public class PxdLoadingView extends View {
             public void onAnimationEnd(Animator animation) {
                 mTickProgress = 0f; // 重置进度
                 mShowTick = true;// 显示打钩
-                mTickAnimator.start();
+                mTickAnimator.start();// 开始打钩动画
+                // mRightAnimator.start(); // 开始勾勾动画
             }
         });
 
+
+        // 勾勾动画
+        mRightAnimator = ValueAnimator.ofFloat(0f,1f);
+        mRightAnimator.setDuration(500);
+        mRightAnimator.addUpdateListener(animation -> {
+            rightPathRate = (Float) animation.getAnimatedValue();
+            resetPath();
+            invalidate();
+        });
+
         // 3. 在initAnimators()最后调用
-        initTickAnimator();
+        initTickAnimator();// 初始化打钩动画
     }
 
     public void startAnimation(){
@@ -218,20 +241,36 @@ public class PxdLoadingView extends View {
 
         mShowTick = false;// 重置打钩状态
         mTickProgress = 0f;     // 重置打钩进度
+
+        rightPathRate=0f; // 重置勾勾动画进度
+    }
+
+    //给外部提供一个方法来控制是否显示改变当前下载进度
+    public void setCurrentProgress(float progress){
+        // 水位上升是mWaveLevel从getHeight()到getWidth()
+    //     需要将外部的进度值转化为动画因子
+        mWaterLevel = getHeight() - (getHeight() - getWidth() * progress);
+        resetPath();
+        if (progress >= 0.95) {
+            //开始√动画
+            mRightAnimator.start();
+        }
+        invalidate();
+
     }
 
     // 2. 初始化打钩动画
     private void initTickAnimator() {
-        mTickAnimator = ValueAnimator.ofFloat(0f, 1f);
+        mTickAnimator = ValueAnimator.ofFloat(0f, 1f);// 0f表示起点，1f表示终点
         mTickAnimator.setDuration(400);
         mTickAnimator.addUpdateListener(animation -> {
-            mTickProgress = (float) animation.getAnimatedValue();
+            mTickProgress = (float) animation.getAnimatedValue();// 获取当前进度
             invalidate();
         });
         mTickAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                mShowTick = false;
+                mShowTick = false;// 动画结束后隐藏打钩
             }
         });
     }
@@ -295,7 +334,27 @@ public class PxdLoadingView extends View {
         mWaterLevel = getHeight();
         //resetPath();
 
-        mRainDropAnimator.start();
+        //设置勾勾路径
+        float x=getWidth()/6;
+        float xOffset = getWidth()/4-x;
+        rightPath =new Path();
+        rightPath.moveTo(getWidth()/2f-x-xOffset, getWidth()*3/2f);
+        rightPath.lineTo(getWidth()/2f-xOffset, getWidth()*3/2f+x);
+        rightPath.lineTo(getWidth()/2f+2*x-xOffset, getWidth()*3/2f-x);
+        //测量这个path对应的长度
+        rightPathMeasure.setPath(rightPath, false);
+        rightPathMeasure.getLength();// 获取路径长度
+        rightPathLength=rightPathMeasure.getLength();
+
+        //设置勾勾画笔
+        mRightPaint.setColor(Color.BLACK);
+        mRightPaint.setStrokeWidth(UIUtils.dp2px(10));
+        mRightPaint.setStrokeCap(Paint.Cap.ROUND);
+        mRightPaint.setStrokeJoin(Paint.Join.ROUND);
+        mRightPaint.setStyle(Paint.Style.STROKE);
+
+
+        mRainDropAnimator.start();// 开始雨滴下落动画
     }
 
     private void resetPath(){
@@ -340,7 +399,17 @@ public class PxdLoadingView extends View {
         //绘制水波
         drawWater(canvas);
 
-        drawTick(canvas); // 新增// 绘制打钩
+        // drawTick(canvas); // 新增// 绘制打钩
+        drawBlackTick(canvas); // 新增// 绘制打钩
+    }
+
+    private void drawBlackTick(Canvas canvas) {
+        //从path中获取勾勾的某一段路径作为绘制的path
+        rightPathMeasure.getSegment(0,rightPathLength*rightPathRate,rightPathSegment,true);
+
+    //             绘制截取之后的路经
+
+        canvas.drawPath(rightPathSegment, mRightPaint);
     }
 
     // 5. onDraw中绘制√
@@ -354,7 +423,7 @@ public class PxdLoadingView extends View {
         // 计算√的起点、中点、终点
         float centerX = getWidth() / 2f;
         float centerY = getWidth() * 3f / 2f;;
-        float size = mRadius * 0.8f;
+        float size = mRadius * 0.8f;// √的大小
         float startX = centerX - size / 2;// 起点X坐标
         float startY = centerY + size * 0.1f;
         float midX = centerX - size * 0.1f;// 中点X坐标
@@ -363,14 +432,16 @@ public class PxdLoadingView extends View {
         float endY = centerY - size * 0.3f;
 
         Path tickPath = new Path();
-        tickPath.moveTo(startX, startY);
+        tickPath.moveTo(startX, startY);// 起点
         if (mTickProgress < 0.5f) {
             float t = mTickProgress / 0.5f;
+            // 计算中点到起点的插值
             tickPath.lineTo(
                     startX + (midX - startX) * t,
                     startY + (midY - startY) * t
             );
         } else {
+            // 计算中点到终点的插值
             tickPath.lineTo(midX, midY);
             float t = (mTickProgress - 0.5f) / 0.5f;
             tickPath.lineTo(
@@ -402,10 +473,7 @@ public class PxdLoadingView extends View {
 
     //绘制两个扇形
     private void drawSectors(Canvas canvas){
-        mPaint.setColor(mRainDropColor);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(mStrokeWidth);
-        mPaint.setStrokeCap(Paint.Cap.ROUND);
+
         canvas.drawArc(mSectorRect,-90,mSweepAngle,false,mPaint);
         canvas.drawArc(mSectorRect,-90,-mSweepAngle,false,mPaint);
 
