@@ -1,5 +1,6 @@
 package com.andriod.guessdraw.ui.activity;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -11,6 +12,7 @@ import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.andriod.guessdraw.databinding.ActivityMainBinding;
@@ -30,6 +32,7 @@ import cn.leancloud.LCQuery;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
+import com.andriod.guessdraw.ui.view.LoadingView;
 import com.andriod.guessdraw.ui.view.PxdLoadingView;
 import com.bumptech.glide.Glide;
 
@@ -42,15 +45,31 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private static final int REQUEST_CODE_PICK_IMAGE = 1001;
 
+    ActivityResultLauncher<String> permissionLauncher;
+    LoadingView lv;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        binding.btnAlertLoad.setOnClickListener(v->{
+            //开始下载动画
+            // binding.loadingView.startAnimation();
+
+
+            lv = new LoadingView(this);
+            lv.show();
+
+            // 模拟加载数据
+            loadData();
+        });
+
+
         binding.btnLoad.setOnClickListener(v->{
             // binding.pxdLoadingView.setVisibility(View.VISIBLE);
-            binding.pxdLoadingView.startAnimation();
+            binding.loadingAnimationView.setVisibility(View.VISIBLE);
         });
 
         binding.btnImg.setOnClickListener(v->{
@@ -154,6 +173,18 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE);
         });
     }
+
+    // 模拟加载数据
+    private void loadData() {
+        ValueAnimator animator= ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(10000);
+        animator.addUpdateListener(animation -> {
+            float progress = (Float) animation.getAnimatedValue();
+            lv.updateProgress(progress);
+        });
+        animator.start();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

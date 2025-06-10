@@ -1,7 +1,4 @@
 package com.andriod.guessdraw.ui.view;
-
-
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
@@ -14,6 +11,7 @@ import android.graphics.PathMeasure;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -70,6 +68,9 @@ public class PxdLoadingView extends View {
 
     // 1. 新增变量
 
+    //记录水波的个数
+    private int mWaveCount = 1000;
+
     private Path rightPath = new Path();//
     private PathMeasure rightPathMeasure = new PathMeasure();// 路径测量器对象
     //保存√的长度
@@ -83,12 +84,45 @@ public class PxdLoadingView extends View {
     private float mTickProgress = 0f;
     private ValueAnimator mTickAnimator;
 
+    //记录外部监听者对象
+    private OnAnimationListener mListener;
+
+    public void setAnimationListener(OnAnimationListener listener){
+        mListener = listener;
+    }
+
+
+    public PxdLoadingView(Context context){
+        this(context,null);
+    }
+
     public PxdLoadingView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs,0);
     }
 
     public PxdLoadingView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    //给外部提供一个设置当前下载进度的方法
+    public void setCurrentProgress(float progress){
+        //水位上升是有mWaveLevel因子控制 getHeight() -> getWidth()
+        //需要将外部设置的进度值转化为动画因子
+        float max = getHeight() - mSpace - mStrokeWidth;
+        float min = max - mRadius*2;
+        mWaterLevel = max - (max - min) * progress;
+
+        if (progress == 1.0){
+            //开始勾勾动画
+            mRightAnimator.start();
+            //结束水波荡漾动画
+            mWaterWaveAnimator.cancel();
+
+            resetPath(true);
+        }else{
+            resetPath(false);
+        }
+        invalidate();
     }
 
     //初始化所有的动画对象
@@ -156,7 +190,7 @@ public class PxdLoadingView extends View {
                 //开始收拢动画
                 //mSectorCloseAnimator.start();
                 //开始水位上升动画
-                mWaterLevelAnimator.start();
+                // mWaterLevelAnimator.start();
                 //水波动画
                 mWaterWaveAnimator.start();
             }
@@ -190,46 +224,72 @@ public class PxdLoadingView extends View {
             invalidate();
         });
 
-        //水位上升的动画
-        mWaterLevelAnimator = ValueAnimator.ofFloat(getHeight(),getWidth());
-        mWaterLevelAnimator.setDuration(2000);
-        mWaterLevelAnimator.addUpdateListener( animation -> {
-            mWaterLevel = (Float)animation.getAnimatedValue();
-            resetPath();
-            invalidate();
-        });
+        // //水位上升的动画
+        // mWaterLevelAnimator = ValueAnimator.ofFloat(getHeight(),getWidth());
+        // mWaterLevelAnimator.setDuration(2000);
+        // mWaterLevelAnimator.addUpdateListener( animation -> {
+        //     mWaterLevel = (Float)animation.getAnimatedValue();
+        //     resetPath(false);
+        //     invalidate();
+        // });
 
         //波浪荡漾的动画
-        mWaterWaveAnimator = ValueAnimator.ofFloat(-2*getWidth(),0f);
-        mWaterWaveAnimator.setDuration(2000);
+        mWaterWaveAnimator = ValueAnimator.ofFloat(-(mWaveCount-1)*getWidth(),0f);
+        mWaterWaveAnimator.setDuration(500L*(mWaveCount-1));
+        mWaterWaveAnimator.setInterpolator(new LinearInterpolator());// 设置线性插值器
+
         mWaterWaveAnimator.addUpdateListener( animation -> {
             mWaterWaveX = (Float)animation.getAnimatedValue();
-            resetPath();
+            resetPath(false);
             invalidate();
         });
 
-        mWaterLevelAnimator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mTickProgress = 0f; // 重置进度
-                mShowTick = true;// 显示打钩
-                mTickAnimator.start();// 开始打钩动画
-                // mRightAnimator.start(); // 开始勾勾动画
-            }
-        });
+        // mWaterLevelAnimator.addListener(new AnimatorListenerAdapter() {
+        //     @Override
+        //     public void onAnimationEnd(Animator animation) {
+        //         mTickProgress = 0f; // 重置进度
+        //         mShowTick = true;// 显示打钩
+        //         // mTickAnimator.start();// 开始打钩动画
+        //         mRightAnimator.start(); // 开始勾勾动画
+        //     }
+        // });
 
 
         // 勾勾动画
         mRightAnimator = ValueAnimator.ofFloat(0f,1f);
-        mRightAnimator.setDuration(500);
+        mRightAnimator.setDuration(1000);
         mRightAnimator.addUpdateListener(animation -> {
             rightPathRate = (Float) animation.getAnimatedValue();
-            resetPath();
+
             invalidate();
         });
 
+        mRightAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(@NonNull Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(@NonNull Animator animation) {
+                if (mListener != null){
+                    mListener.onEnd();
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(@NonNull Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(@NonNull Animator animation) {
+
+            }
+        });
+
         // 3. 在initAnimators()最后调用
-        initTickAnimator();// 初始化打钩动画
+        // initTickAnimator();// 初始化打钩动画
     }
 
     public void startAnimation(){
@@ -240,24 +300,23 @@ public class PxdLoadingView extends View {
         invalidate();
 
         mShowTick = false;// 重置打钩状态
-        mTickProgress = 0f;     // 重置打钩进度
-
-        rightPathRate=0f; // 重置勾勾动画进度
+        mTickProgress = 0f;     // 重置打钩进度自己写的进度
+        rightPathRate=0f; // 重置勾勾动画进度  东哥写的
     }
 
     //给外部提供一个方法来控制是否显示改变当前下载进度
-    public void setCurrentProgress(float progress){
-        // 水位上升是mWaveLevel从getHeight()到getWidth()
-    //     需要将外部的进度值转化为动画因子
-        mWaterLevel = getHeight() - (getHeight() - getWidth() * progress);
-        resetPath();
-        if (progress >= 0.95) {
-            //开始√动画
-            mRightAnimator.start();
-        }
-        invalidate();
-
-    }
+    // public void setCurrentProgress(float progress){
+    //     // 水位上升是mWaveLevel从getHeight()到getWidth()
+    // //     需要将外部的进度值转化为动画因子
+    //     mWaterLevel = getHeight() - (getHeight() - getWidth() * progress);
+    //     resetPath(false);
+    //     if (progress >= 0.95) {
+    //         //开始√动画
+    //         mRightAnimator.start();
+    //     }
+    //     invalidate();
+    //
+    // }
 
     // 2. 初始化打钩动画
     private void initTickAnimator() {
@@ -343,8 +402,7 @@ public class PxdLoadingView extends View {
         rightPath.lineTo(getWidth()/2f+2*x-xOffset, getWidth()*3/2f-x);
         //测量这个path对应的长度
         rightPathMeasure.setPath(rightPath, false);
-        rightPathMeasure.getLength();// 获取路径长度
-        rightPathLength=rightPathMeasure.getLength();
+        rightPathLength=rightPathMeasure.getLength();// 获取路径长度
 
         //设置勾勾画笔
         mRightPaint.setColor(Color.BLACK);
@@ -353,11 +411,12 @@ public class PxdLoadingView extends View {
         mRightPaint.setStrokeJoin(Paint.Join.ROUND);
         mRightPaint.setStyle(Paint.Style.STROKE);
 
+        startAnimation();
 
-        mRainDropAnimator.start();// 开始雨滴下落动画
+        // mRainDropAnimator.start();// 开始雨滴下落动画
     }
 
-    private void resetPath(){
+    private void resetPath(boolean isEnd){
         //计算波长
         float waveLength = getWidth();
 
@@ -365,18 +424,25 @@ public class PxdLoadingView extends View {
         //清空路径
         mWaterWavePath.reset();
         //确定起始点坐标
+        //确定起始点坐标
         mWaterWavePath.moveTo(mWaterWaveX,mWaterLevel);
-        for (int i = 0; i < 3; i++) {
-            //绘制2次贝塞尔曲线
-            mWaterWavePath.cubicTo(
-                    waveLength*i + mWaterWaveX + waveLength/4f,mWaterLevel-mWaveHeight,
-                    waveLength*i + mWaterWaveX + waveLength*3/4f,mWaterLevel+mWaveHeight,
-                    waveLength*i + mWaterWaveX + waveLength, mWaterLevel
-            );
+
+        if (isEnd) {
+            mWaterWavePath.moveTo(getWidth(),getWidth());
+        }else {
+            for (int i = 0; i < mWaveCount; i++) {
+                //绘制2次贝塞尔曲线
+                mWaterWavePath.cubicTo(
+                        waveLength*i + mWaterWaveX + waveLength/4f,mWaterLevel-mWaveHeight,
+                        waveLength*i + mWaterWaveX + waveLength*3/4f,mWaterLevel+mWaveHeight,
+                        waveLength*i + mWaterWaveX + waveLength, mWaterLevel
+                );
+            }
         }
 
+
         //移动到最右下角
-        mWaterWavePath.lineTo(mWaterWaveX + 3*waveLength, getHeight());
+        mWaterWavePath.lineTo(mWaterWaveX + mWaveCount*waveLength, getHeight());
         //移动到最左下角
         mWaterWavePath.lineTo(mWaterWaveX, getHeight());
         //连接到起点
@@ -473,9 +539,15 @@ public class PxdLoadingView extends View {
 
     //绘制两个扇形
     private void drawSectors(Canvas canvas){
-
+        mPaint.setColor(mRainDropColor);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(mStrokeWidth);
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
         canvas.drawArc(mSectorRect,-90,mSweepAngle,false,mPaint);
         canvas.drawArc(mSectorRect,-90,-mSweepAngle,false,mPaint);
+    }
 
+    public interface OnAnimationListener{
+        void onEnd();
     }
 }
