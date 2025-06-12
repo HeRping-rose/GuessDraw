@@ -4,17 +4,20 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.andriod.guessdraw.R;
 import com.andriod.guessdraw.databinding.ActivityMainBinding;
 
 import java.io.IOException;
@@ -65,6 +68,11 @@ public class MainActivity extends AppCompatActivity {
             // 模拟加载数据
             loadData();
         });
+
+        // binding.tvAgreement.setEnabled(true);
+        // binding.tvAgreement.setText(Html.fromHtml(getString(R.string.agreement_text),Html.FROM_HTML_MODE_LEGACY));
+        // binding.tvAgreement.setMovementMethod(LinkMovementMethod.getInstance());
+        // binding.tvAgreement.setLinkTextColor(Color.RED); // 可选，设置链接颜色
 
 
         binding.btnLoad.setOnClickListener(v->{

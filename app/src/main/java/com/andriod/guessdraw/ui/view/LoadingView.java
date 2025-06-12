@@ -52,6 +52,10 @@ public class LoadingView {
     }
 
     public void dismiss(){
-        mWindowManager.removeView(mView);
+        try {
+            mWindowManager.removeView(mView);
+        } catch (IllegalArgumentException e) {
+            // 已经被移除或未添加，忽略异常
+        }
     }
 }

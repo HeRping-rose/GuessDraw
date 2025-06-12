@@ -31,4 +31,12 @@
 
 
     </declare-styleable>
+        <declare-styleable name="PxdCircleView">
+                <attr name="src" format="reference|color"/>
+                <attr name="placeHolder" format="reference|color"/>
+                <attr name="borderWidth" format="dimension"/>
+                <attr name="borderColor" format="color"/>
+                <attr name="shadowColor" format="color"/>
+                <attr name="shadowRadius" format="dimension"/>
+        </declare-styleable>
 </resources>

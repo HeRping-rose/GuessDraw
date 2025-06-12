@@ -61,6 +61,7 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
             // 点击圆形图片时,显示一个Toast消息
             Toast.makeText(this, "圆形图片被点击了", Toast.LENGTH_SHORT).show();
         });
+        mBinding.pxdCircleView.setImageUrl("https://jimeng.jianying.com/ai-tool/work-detail/7502266922600271156?workDetailType=Image&itemType=9");
 
 
 
