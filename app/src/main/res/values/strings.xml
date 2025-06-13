@@ -2,8 +2,8 @@
     <string name="app_name">Diy猜画</string>
     <string name="agreement_text">
         已阅读并同意
-        <a href="https://your.domain/user">《用户协议》</a>
-        <a href="https://your.domain/privacy">《隐私政策》</a>
-        <a href="https://your.domain/child">《儿童隐私保护声明》</a>
+        <a href="https://www.baidu.com">《用户协议》</a>
+        <a href="https://www.baidu.com">《隐私政策》</a>
+        <a href="https://www.baidu.com">《儿童隐私保护声明》</a>
     </string>
 </resources>

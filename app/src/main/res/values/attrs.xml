@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
 <!--    自定义jumpView自定义属性-->
     <declare-styleable name="JumpView" >
 <!--                跳过按钮的文字style-->
         <attr name="text" format="string" />
         <attr name="textColor" format="color|reference" />
         <attr name="textSize" format="dimension" />
-
         <attr name="background" format="reference" />
-
 <!--        <attr name="backgroundColor" format="reference|color" />-->
-
 <!--        外环圆形背景颜色-->
         <attr name="backgroundCircleColor" format="reference|color" />
-
 <!--        进度条颜色-->
         <attr name="progressColor" format="reference|color" />
 <!--        进度条宽度-->
@@ -31,12 +26,32 @@
 
 
     </declare-styleable>
-        <declare-styleable name="PxdCircleView">
-                <attr name="src" format="reference|color"/>
-                <attr name="placeHolder" format="reference|color"/>
-                <attr name="borderWidth" format="dimension"/>
-                <attr name="borderColor" format="color"/>
-                <attr name="shadowColor" format="color"/>
-                <attr name="shadowRadius" format="dimension"/>
-        </declare-styleable>
+
+    <declare-styleable name="PxdCircleView">
+        <attr name="src" format="reference|color"/>
+        <attr name="placeHolder" format="reference|color"/>
+        <attr name="borderWidth" format="dimension"/>
+        <attr name="borderColor" format="color"/>
+        <attr name="shadowColor" format="color"/>
+        <attr name="shadowRadius" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="RichTextView">
+        <attr name="richText"  format="string"/>
+        <attr name="richTextColor" format="color|reference"/>
+        <attr name="richTextSize" format="dimension"/>
+        <attr name="maxLines" format="integer" />
+        <attr name="textAlignment" format="integer">
+            <enum name="left" value="0"/>
+            <enum name="center" value="1"/>
+            <enum name="right" value="2"/>
+        </attr>
+        <attr name="gravity" format="integer">
+            <enum name="top" value="0"/>
+            <enum name="center" value="1"/>
+            <enum name="bottom" value="2"/>
+        </attr>
+
+    </declare-styleable>
+
 </resources>
